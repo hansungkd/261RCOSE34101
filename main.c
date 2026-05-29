@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "process.h"
+
 typedef enum {
     MENU_CREATE_PROCESSES = 1,
     MENU_PRINT_PROCESSES,
@@ -77,7 +79,7 @@ static void handle_menu_option(int option)
         print_todo("Create random process set");
         break;
     case MENU_PRINT_PROCESSES:
-        print_todo("Print current process set");
+        process_print_all();
         break;
     case MENU_RUN_FCFS:
         print_todo("Run FCFS scheduling");

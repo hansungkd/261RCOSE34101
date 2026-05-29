@@ -18,12 +18,13 @@ make
 
 - Interactive menu-based simulator shell
 - Build system through `Makefile`
-- Placeholder menu handlers for each feature
+- `Process` structure with PID, arrival time, CPU burst, I/O burst, and priority
+- Sample in-memory process table
+- Menu option 2 prints the current process set
 
 ## Plan
 
-1. Add `Process` structure and in-memory process table.
-2. Add random process generation.
-3. Add Ready Queue and Waiting Queue structures.
-4. Implement FCFS first.
-5. Add Gantt Chart and waiting/turnaround metrics.
+1. Add random process generation.
+2. Add Ready Queue and Waiting Queue structures.
+3. Implement FCFS.
+4. Add Gantt Chart and waiting/turnaround metrics.
