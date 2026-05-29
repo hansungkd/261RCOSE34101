@@ -69,14 +69,14 @@ static int read_menu_option(void)
 static void print_todo(const char *feature)
 {
     printf("\n[%s]\n", feature);
-    printf("This feature will be implemented in a later commit.\n");
+    printf("This feature will be implemented later.\n");
 }
 
 static void handle_menu_option(int option)
 {
     switch (option) {
     case MENU_CREATE_PROCESSES:
-        print_todo("Create random process set");
+        process_create_random();
         break;
     case MENU_PRINT_PROCESSES:
         process_print_all();

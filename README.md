@@ -20,11 +20,19 @@ make
 - Build system through `Makefile`
 - `Process` structure with PID, arrival time, CPU burst, I/O burst, and priority
 - Sample in-memory process table
+- Menu option 1 creates a random process set
 - Menu option 2 prints the current process set
+- `queue.c` / `queue.h` provide Queue base structures
+- Process list accessor functions for future scheduler modules
+
+Current random ranges:
+
+- Arrival time: 0-9
+- CPU burst time: 1-10
+- I/O burst time: 0-5
+- Priority: 1-5, where a smaller number means higher priority
 
 ## Plan
 
-1. Add random process generation.
-2. Add Ready Queue and Waiting Queue structures.
-3. Implement FCFS.
-4. Add Gantt Chart and waiting/turnaround metrics.
+1. Implement FCFS using the queue module.
+2. Add Gantt Chart and waiting/turnaround metrics.

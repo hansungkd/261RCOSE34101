@@ -11,6 +11,10 @@ typedef struct {
     int priority;
 } Process;
 
+void process_create_random(void);
 void process_print_all(void);
+int process_get_count(void);
+const Process *process_get_all(void);
+const Process *process_get_at(int index);
 
 #endif

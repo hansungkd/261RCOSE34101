@@ -1,7 +1,7 @@
 CC ?= gcc
 CFLAGS ?= -std=c11 -Wall -Wextra -pedantic -O2
 TARGET := scheduler
-OBJS := main.o process.o
+OBJS := main.o process.o queue.o
 
 .PHONY: all clean run
 
