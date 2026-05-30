@@ -22,8 +22,10 @@ make
 - Sample in-memory process table
 - Menu option 1 creates a random process set
 - Menu option 2 prints the current process set
+- Menu option 3 runs a first FCFS scheduler using CPU burst time
 - `queue.c` / `queue.h` provide Queue base structures
 - Process list accessor functions for future scheduler modules
+- `scheduler.c` / `scheduler.h` provide scheduling algorithm implementations
 
 Current random ranges:
 
@@ -34,5 +36,5 @@ Current random ranges:
 
 ## Plan
 
-1. Implement FCFS using the queue module.
-2. Add Gantt Chart and waiting/turnaround metrics.
+1. Add Gantt Chart and waiting/turnaround metrics to FCFS.
+2. Add I/O handling through the Waiting Queue.

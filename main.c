@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include "process.h"
+#include "scheduler.h"
 
 typedef enum {
     MENU_CREATE_PROCESSES = 1,
@@ -82,7 +83,7 @@ static void handle_menu_option(int option)
         process_print_all();
         break;
     case MENU_RUN_FCFS:
-        print_todo("Run FCFS scheduling");
+        scheduler_run_fcfs();
         break;
     case MENU_RUN_NONPREEMPTIVE_SJF:
         print_todo("Run Non-Preemptive SJF scheduling");
