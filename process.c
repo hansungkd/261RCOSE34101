@@ -13,6 +13,7 @@ static Process processes[MAX_PROCESSES] = {
 
 static int process_count = 3;
 
+/* Discard the rest of the current input line after bad scanf input. */
 static void clear_input_buffer(void)
 {
     int ch;
@@ -27,6 +28,7 @@ static void clear_input_buffer(void)
     }
 }
 
+/* Return a random integer in the inclusive range [min, max]. */
 static int random_between(int min, int max)
 {
     int range;
@@ -38,6 +40,7 @@ static int random_between(int min, int max)
     return min + random_value;
 }
 
+/* Remove all I/O events from one process before generating new ones. */
 static void clear_io(Process *process)
 {
     int i;
@@ -51,6 +54,7 @@ static void clear_io(Process *process)
     }
 }
 
+/* Seed rand() once for this program run. */
 static void seed_random_once(void)
 {
     static int seeded = 0;
@@ -61,6 +65,7 @@ static void seed_random_once(void)
     }
 }
 
+/* Check whether an I/O trigger time is already used by this process. */
 static int trigger_used(const Process *process, int trigger_time)
 {
     int i;
@@ -74,6 +79,7 @@ static int trigger_used(const Process *process, int trigger_time)
     return 0;
 }
 
+/* Keep I/O events sorted by their CPU trigger time. */
 static void sort_io(Process *process)
 {
     int i;
@@ -96,6 +102,7 @@ static void sort_io(Process *process)
     }
 }
 
+/* Generate random I/O event count, trigger times, and durations. */
 static void randomize_io(Process *process)
 {
     int max_event_count;
@@ -133,6 +140,7 @@ static void randomize_io(Process *process)
     sort_io(process);
 }
 
+/* Print one process's I/O events as trigger:duration values. */
 static void print_io(const Process *process)
 {
     int i;
@@ -154,6 +162,7 @@ static void print_io(const Process *process)
     }
 }
 
+/* Replace the current process set with randomly generated processes. */
 void process_create_random(void)
 {
     int count;
@@ -192,6 +201,7 @@ void process_create_random(void)
     printf("Created %d random processes.\n", process_count);
 }
 
+/* Print the process table currently used by scheduler runs. */
 void process_print_all(void)
 {
     int i;
@@ -217,16 +227,19 @@ void process_print_all(void)
     }
 }
 
+/* Return how many processes are currently loaded. */
 int process_get_count(void)
 {
     return process_count;
 }
 
+/* Return the current process array without copying it. */
 const Process *process_get_all(void)
 {
     return processes;
 }
 
+/* Return one process by array index, or NULL for an invalid index. */
 const Process *process_get_at(int index)
 {
     if (index < 0) {

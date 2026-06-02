@@ -2,6 +2,7 @@
 
 #include "queue.h"
 
+/* Start an empty circular FIFO queue. */
 void queue_init(ProcessQueue *queue)
 {
     queue->front = 0;
@@ -9,21 +10,25 @@ void queue_init(ProcessQueue *queue)
     queue->size = 0;
 }
 
+/* Return whether the queue has no process indexes. */
 int queue_is_empty(const ProcessQueue *queue)
 {
     return queue->size == 0;
 }
 
+/* Return whether the queue cannot accept more process indexes. */
 int queue_is_full(const ProcessQueue *queue)
 {
     return queue->size == QUEUE_CAPACITY;
 }
 
+/* Return the current number of process indexes. */
 int queue_size(const ProcessQueue *queue)
 {
     return queue->size;
 }
 
+/* Add a process index to the rear of the FIFO queue. */
 int queue_enqueue(ProcessQueue *queue, int process_index)
 {
     int next_rear;
@@ -48,6 +53,7 @@ int queue_enqueue(ProcessQueue *queue, int process_index)
     return 1;
 }
 
+/* Remove the oldest process index from the front of the FIFO queue. */
 int queue_dequeue(ProcessQueue *queue, int *process_index)
 {
     int next_front;
@@ -64,6 +70,7 @@ int queue_dequeue(ProcessQueue *queue, int *process_index)
     return 1;
 }
 
+/* Read the front process index without removing it. */
 int queue_peek(const ProcessQueue *queue, int *process_index)
 {
     if (queue_is_empty(queue)) {
@@ -74,6 +81,7 @@ int queue_peek(const ProcessQueue *queue, int *process_index)
     return 1;
 }
 
+/* Print queue contents using process IDs instead of raw array indexes. */
 void queue_print(const char *name, const ProcessQueue *queue, const Process processes[])
 {
     int i;

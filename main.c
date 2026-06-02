@@ -17,6 +17,7 @@ typedef enum {
     MENU_EXIT = 0
 } MenuOption;
 
+/* Print the interactive simulator menu. */
 static void print_menu(void)
 {
     printf("\n");
@@ -35,6 +36,7 @@ static void print_menu(void)
     printf("Select: ");
 }
 
+/* Discard the rest of the current input line after bad input. */
 static void clear_input_buffer(void)
 {
     int ch;
@@ -49,6 +51,7 @@ static void clear_input_buffer(void)
     }
 }
 
+/* Read one menu number and reject values outside the menu range. */
 static int read_menu_option(void)
 {
     int choice;
@@ -81,12 +84,14 @@ static int read_menu_option(void)
     return choice;
 }
 
+/* Print a placeholder for menu items not implemented yet. */
 static void print_todo(const char *feature)
 {
     printf("\n[%s]\n", feature);
     printf("This feature will be implemented later.\n");
 }
 
+/* Dispatch one validated menu option to the matching feature. */
 static void handle_menu_option(int option)
 {
     switch (option) {
@@ -100,7 +105,7 @@ static void handle_menu_option(int option)
         scheduler_run_fcfs();
         break;
     case MENU_RUN_NONPREEMPTIVE_SJF:
-        print_todo("Run Non-Preemptive SJF scheduling");
+        scheduler_run_nonpreemptive_sjf();
         break;
     case MENU_RUN_PREEMPTIVE_SJF:
         print_todo("Run Preemptive SJF scheduling");
@@ -126,6 +131,7 @@ static void handle_menu_option(int option)
     }
 }
 
+/* Main menu loop. */
 int main(void)
 {
     int option;

@@ -4,6 +4,7 @@
 
 #define GANTT_CELL_WIDTH 8
 
+/* Print one Gantt cell label for either a process or IDLE time. */
 static void print_segment_label(int pid)
 {
     if (pid == GANTT_IDLE_PID) {
@@ -14,11 +15,13 @@ static void print_segment_label(int pid)
     printf("| P%-*d", GANTT_CELL_WIDTH - 3, pid);
 }
 
+/* Start an empty Gantt chart. */
 void gantt_init(GanttChart *chart)
 {
     chart->count = 0;
 }
 
+/* Add a segment, merging adjacent segments for the same process. */
 int gantt_add_segment(GanttChart *chart, int start_time, int end_time, int pid)
 {
     GanttSegment *last;
@@ -48,6 +51,7 @@ int gantt_add_segment(GanttChart *chart, int start_time, int end_time, int pid)
     return 1;
 }
 
+/* Print start/end rows for each Gantt segment. */
 void gantt_print_timeline(const GanttChart *chart)
 {
     int i;
@@ -75,6 +79,7 @@ void gantt_print_timeline(const GanttChart *chart)
     }
 }
 
+/* Print the compact bar-style Gantt chart. */
 void gantt_print(const GanttChart *chart)
 {
     int i;
