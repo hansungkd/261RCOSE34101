@@ -108,7 +108,7 @@ static void handle_menu_option(int option)
         scheduler_run_nonpreemptive_sjf();
         break;
     case MENU_RUN_PREEMPTIVE_SJF:
-        print_todo("Run Preemptive SJF scheduling");
+        scheduler_run_preemptive_sjf();
         break;
     case MENU_RUN_NONPREEMPTIVE_PRIORITY:
         print_todo("Run Non-Preemptive Priority scheduling");

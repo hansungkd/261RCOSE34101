@@ -3,5 +3,6 @@
 
 void scheduler_run_fcfs(void);
 void scheduler_run_nonpreemptive_sjf(void);
+void scheduler_run_preemptive_sjf(void);
 
 #endif
