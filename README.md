@@ -24,8 +24,10 @@ make
 - Menu option 2 prints the current process set
 - Menu option 3 runs a first FCFS scheduler using CPU burst time
 - `queue.c` / `queue.h` provide Queue base structures
+- `gantt.c` / `gantt.h` provide Gantt Chart output
 - Process list accessor functions for future scheduler modules
 - `scheduler.c` / `scheduler.h` provide scheduling algorithm implementations
+- FCFS prints completion time, waiting time, turnaround time, and averages
 
 Current random ranges:
 
@@ -36,5 +38,5 @@ Current random ranges:
 
 ## Plan
 
-1. Add Gantt Chart and waiting/turnaround metrics to FCFS.
-2. Add I/O handling through the Waiting Queue.
+1. Add I/O handling through the Waiting Queue.
+2. Add Non-Preemptive SJF.
