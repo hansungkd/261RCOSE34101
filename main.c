@@ -39,8 +39,13 @@ static void clear_input_buffer(void)
 {
     int ch;
 
-    while ((ch = getchar()) != '\n' && ch != EOF) {
-        /* discard remaining input */
+    ch = getchar();
+    while (ch != '\n') {
+        if (ch == EOF) {
+            return;
+        }
+
+        ch = getchar();
     }
 }
 
@@ -48,6 +53,8 @@ static int read_menu_option(void)
 {
     int choice;
     int result;
+    int too_small;
+    int too_large;
 
     result = scanf("%d", &choice);
     if (result == EOF) {
@@ -60,7 +67,14 @@ static int read_menu_option(void)
         return -1;
     }
 
-    if (choice < MENU_EXIT || choice > MENU_COMPARE_RESULTS) {
+    too_small = choice < MENU_EXIT;
+    too_large = choice > MENU_COMPARE_RESULTS;
+
+    if (too_small) {
+        return -1;
+    }
+
+    if (too_large) {
         return -1;
     }
 

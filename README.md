@@ -28,15 +28,19 @@ make
 - Process list accessor functions for future scheduler modules
 - `scheduler.c` / `scheduler.h` provide scheduling algorithm implementations
 - FCFS prints completion time, waiting time, turnaround time, and averages
+- FCFS handles zero or more I/O events per process through the Waiting Queue
+- FCFS waiting time counts only time spent in the Ready Queue
 
 Current random ranges:
 
 - Arrival time: 0-9
 - CPU burst time: 1-10
-- I/O burst time: 0-5
+- I/O event count: 0-3, limited by CPU burst time
+- I/O trigger time: after 1 to `CPU burst - 1` CPU time units
+- I/O duration per event: 1-5
 - Priority: 1-5, where a smaller number means higher priority
 
 ## Plan
 
-1. Add I/O handling through the Waiting Queue.
-2. Add Non-Preemptive SJF.
+1. Add Non-Preemptive SJF.
+2. Add result comparison for FCFS and Non-Preemptive SJF.

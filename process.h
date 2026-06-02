@@ -2,6 +2,12 @@
 #define PROCESS_H
 
 #define MAX_PROCESSES 10
+#define MAX_IO_EVENTS 3
+
+typedef struct {
+    int trigger_time;
+    int duration;
+} IoEvent;
 
 typedef struct {
     int pid;
@@ -9,6 +15,8 @@ typedef struct {
     int cpu_burst_time;
     int io_burst_time;
     int priority;
+    int io_event_count;
+    IoEvent io_events[MAX_IO_EVENTS];
 } Process;
 
 void process_create_random(void);

@@ -47,6 +47,33 @@ int gantt_add_segment(GanttChart *chart, int start_time, int end_time, int pid)
     return 1;
 }
 
+void gantt_print_timeline(const GanttChart *chart)
+{
+    int i;
+
+    printf("\nExecution Timeline\n");
+
+    if (chart->count == 0) {
+        printf("(empty)\n");
+        return;
+    }
+
+    printf("Start    End  Process\n");
+    printf("-----  -----  -------\n");
+
+    for (i = 0; i < chart->count; i++) {
+        printf("%5d  %5d  ",
+               chart->segments[i].start_time,
+               chart->segments[i].end_time);
+
+        if (chart->segments[i].pid == GANTT_IDLE_PID) {
+            printf("IDLE\n");
+        } else {
+            printf("P%d\n", chart->segments[i].pid);
+        }
+    }
+}
+
 void gantt_print(const GanttChart *chart)
 {
     int i;

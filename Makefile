@@ -10,7 +10,7 @@ all: $(TARGET)
 $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)
 
-%.o: %.c
+%.o: %.c $(wildcard *.h)
 	$(CC) $(CFLAGS) -c $<
 
 run: $(TARGET)

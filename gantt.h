@@ -17,6 +17,7 @@ typedef struct {
 
 void gantt_init(GanttChart *chart);
 int gantt_add_segment(GanttChart *chart, int start_time, int end_time, int pid);
+void gantt_print_timeline(const GanttChart *chart);
 void gantt_print(const GanttChart *chart);
 
 #endif
