@@ -29,6 +29,7 @@ int gantt_add_segment(GanttChart *chart, int start_time, int end_time, int pid)
 
     if (chart->count > 0) {
         last = &chart->segments[chart->count - 1];
+        /* Merge adjacent segments. Keep one long P1 run from printing as many tiny P1 blocks. */
         if (last->pid == pid && last->end_time == start_time) {
             last->end_time = end_time;
             return 1;

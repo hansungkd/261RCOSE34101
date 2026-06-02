@@ -14,6 +14,8 @@ typedef struct {
     int next_io_event;
 } FcfsState;
 
+/* FCFS tie-break: earlier arrival time first.
+   If arrival times are equal, smaller PID goes first. */
 static int fcfs_precedes(const Process *left, const Process *right)
 {
     if (left->arrival_time != right->arrival_time) {
@@ -125,6 +127,8 @@ static void admit_arrivals(ReadyQueue *ready_queue,
 {
     int process_index;
 
+    /* Check arrivals for this time tick.
+       Once a process enters the ready queue, mark it as arrived. */
     process_index = next_arrival(processes,
                                  process_count,
                                  states,
@@ -152,6 +156,8 @@ static void count_ready_wait(const ReadyQueue *ready_queue, int waiting_times[])
     int i;
     int position;
 
+    /* Waiting time only counts time spent in the ready queue.
+       Running processes and I/O waiting processes are not counted. */
     for (i = 0; i < ready_queue->size; i++) {
         position = (ready_queue->front + i) % QUEUE_CAPACITY;
         waiting_times[ready_queue->items[position]]++;
@@ -181,6 +187,7 @@ static void start_io(WaitingQueue *waiting_queue,
     int event_index = states[process_index].next_io_event;
     int io_duration;
 
+    /* The running process leaves the CPU for I/O. */
     io_duration = process->io_events[event_index].duration;
 
     states[process_index].io_remaining_time = io_duration;
@@ -215,21 +222,27 @@ static void run_io(WaitingQueue *waiting_queue,
     int i;
     int process_index;
 
+    /* Update only the processes that were already in waiting_queue
+       when this tick started. */
     for (i = 0; i < waiting_count; i++) {
         int dequeued;
 
+        /* Pop one process from waiting_queue so its I/O can progress. */
         dequeued = queue_dequeue(waiting_queue, &process_index);
         if (dequeued == 0) {
             return;
         }
 
+        /* One time unit passes for this process's I/O work. */
         states[process_index].io_remaining_time--;
 
+        /* If I/O is still not finished, keep it in waiting_queue. */
         if (states[process_index].io_remaining_time > 0) {
             queue_enqueue(waiting_queue, process_index);
             continue;
         }
 
+        /* I/O is done. If no CPU work remains, the process is complete. */
         if (states[process_index].remaining_cpu_time == 0) {
             finish_process(&processes[process_index],
                            &states[process_index],
@@ -239,6 +252,7 @@ static void run_io(WaitingQueue *waiting_queue,
                            completion_times,
                            turnaround_times);
         } else {
+            /* Otherwise, send it back to ready_queue to wait for CPU. */
             queue_enqueue(ready_queue, process_index);
         }
     }
@@ -311,6 +325,8 @@ void scheduler_run_fcfs(void)
 
     queue_print("Initial FCFS Order", &initial_order, processes);
 
+    /* Discrete-time simulation.
+       Each loop handles the interval [current_time, current_time + 1). */
     while (completed_count < process_count) {
         int waiting_count;
         int next_time;

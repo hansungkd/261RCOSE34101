@@ -4,6 +4,7 @@
 
 #include "process.h"
 
+/* Default data */
 static Process processes[MAX_PROCESSES] = {
     {1, 0, 8, 3, 2, 1, {{4, 3}}},
     {2, 1, 4, 2, 1, 1, {{2, 2}}},
@@ -100,6 +101,7 @@ static void randomize_io(Process *process)
     int max_event_count;
     int i;
 
+    /* Randomize I/O count, trigger points, and durations. */
     clear_io(process);
 
     if (process->cpu_burst_time <= 1) {
@@ -114,7 +116,7 @@ static void randomize_io(Process *process)
     process->io_event_count = random_between(0, max_event_count);
 
     for (i = 0; i < process->io_event_count; i++) {
-        int trigger_time;
+        int trigger_time; // when to trigger io (executed CPU time)
         int duplicate_trigger;
 
         duplicate_trigger = 1;
@@ -135,6 +137,7 @@ static void print_io(const Process *process)
 {
     int i;
 
+    /* Print as trigger:duration */
     if (process->io_event_count == 0) {
         printf("-");
         return;
