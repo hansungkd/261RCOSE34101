@@ -6,5 +6,6 @@ void scheduler_run_nonpreemptive_sjf(void);
 void scheduler_run_preemptive_sjf(void);
 void scheduler_run_nonpreemptive_priority(void);
 void scheduler_run_preemptive_priority(void);
+void scheduler_run_round_robin(void);
 
 #endif

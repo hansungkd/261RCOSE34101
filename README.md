@@ -27,6 +27,7 @@ make
 - Menu option 5 runs Preemptive SJF scheduling
 - Menu option 6 runs Non-Preemptive Priority scheduling
 - Menu option 7 runs Preemptive Priority scheduling
+- Menu option 8 runs Round Robin scheduling
 - `queue.c` / `queue.h` provide FIFO Queue base structures
 - `priority_queue.c` / `priority_queue.h` provide heap-based Priority Queue selection
 - `gantt.c` / `gantt.h` provide Gantt Chart output
@@ -35,6 +36,7 @@ make
 - `scheduler_fcfs.c` provides FCFS scheduling
 - `scheduler_sjf.c` provides Non-Preemptive and Preemptive SJF scheduling
 - `scheduler_priority.c` provides Non-Preemptive and Preemptive Priority scheduling
+- `scheduler_rr.c` provides Round Robin scheduling
 - `scheduler.h` provides public scheduler function declarations
 - FCFS prints completion time, waiting time, turnaround time, and averages
 - FCFS handles zero or more I/O events per process through the Waiting Queue
@@ -44,6 +46,7 @@ make
 - Preemptive SJF checks for shorter ready jobs at every time tick
 - Non-Preemptive Priority uses smaller priority number as higher priority
 - Preemptive Priority checks for higher-priority ready jobs at every time tick
+- Round Robin asks for a time quantum and requeues unfinished processes when it expires
 
 Current random ranges:
 
@@ -56,5 +59,4 @@ Current random ranges:
 
 ## Plan
 
-1. Add Round Robin.
-2. Add result comparison.
+1. Add result comparison.

@@ -117,7 +117,7 @@ static void handle_menu_option(int option)
         scheduler_run_preemptive_priority();
         break;
     case MENU_RUN_ROUND_ROBIN:
-        print_todo("Run Round Robin scheduling");
+        scheduler_run_round_robin();
         break;
     case MENU_COMPARE_RESULTS:
         print_todo("Compare scheduling results");
