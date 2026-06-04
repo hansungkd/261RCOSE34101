@@ -26,6 +26,7 @@ make
 - Menu option 4 runs Non-Preemptive SJF scheduling
 - Menu option 5 runs Preemptive SJF scheduling
 - Menu option 6 runs Non-Preemptive Priority scheduling
+- Menu option 7 runs Preemptive Priority scheduling
 - `queue.c` / `queue.h` provide FIFO Queue base structures
 - `priority_queue.c` / `priority_queue.h` provide heap-based Priority Queue selection
 - `gantt.c` / `gantt.h` provide Gantt Chart output
@@ -33,7 +34,7 @@ make
 - `scheduler.c` / `scheduler_internal.h` provide shared scheduling helpers
 - `scheduler_fcfs.c` provides FCFS scheduling
 - `scheduler_sjf.c` provides Non-Preemptive and Preemptive SJF scheduling
-- `scheduler_priority.c` provides Non-Preemptive Priority scheduling
+- `scheduler_priority.c` provides Non-Preemptive and Preemptive Priority scheduling
 - `scheduler.h` provides public scheduler function declarations
 - FCFS prints completion time, waiting time, turnaround time, and averages
 - FCFS handles zero or more I/O events per process through the Waiting Queue
@@ -42,6 +43,7 @@ make
 - Non-Preemptive SJF uses Priority Queue push/pop for Ready Queue selection
 - Preemptive SJF checks for shorter ready jobs at every time tick
 - Non-Preemptive Priority uses smaller priority number as higher priority
+- Preemptive Priority checks for higher-priority ready jobs at every time tick
 
 Current random ranges:
 
@@ -54,6 +56,5 @@ Current random ranges:
 
 ## Plan
 
-1. Add Preemptive Priority.
-2. Add Round Robin.
-3. Add result comparison.
+1. Add Round Robin.
+2. Add result comparison.

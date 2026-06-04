@@ -114,7 +114,7 @@ static void handle_menu_option(int option)
         scheduler_run_nonpreemptive_priority();
         break;
     case MENU_RUN_PREEMPTIVE_PRIORITY:
-        print_todo("Run Preemptive Priority scheduling");
+        scheduler_run_preemptive_priority();
         break;
     case MENU_RUN_ROUND_ROBIN:
         print_todo("Run Round Robin scheduling");
