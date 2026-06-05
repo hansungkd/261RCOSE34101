@@ -60,100 +60,11 @@ static void load_order(ReadyQueue *ready_queue,
     }
 }
 
-/* Add newly arrived processes to the FIFO ready queue. */
-static void admit_arrivals(ReadyQueue *ready_queue,
-                           const Process processes[],
-                           int process_count,
-                           ScheduleState states[],
-                           int current_time)
-{
-    int process_index;
-
-    process_index = scheduler_next_arrival(processes,
-                                           process_count,
-                                           states,
-                                           current_time);
-
-    while (process_index != -1) {
-        int enqueued;
-
-        enqueued = queue_enqueue(ready_queue, process_index);
-        if (enqueued == 0) {
-            return;
-        }
-
-        states[process_index].arrived = 1;
-
-        process_index = scheduler_next_arrival(processes,
-                                               process_count,
-                                               states,
-                                               current_time);
-    }
-}
-
-/* Add one waiting-time tick to every process still in the FIFO ready queue. */
-static void count_wait(const ReadyQueue *ready_queue, int waiting_times[])
-{
-    int i;
-    int position;
-
-    /* Waiting time is counted only while a process stays in Ready Queue. */
-    for (i = 0; i < ready_queue->size; i++) {
-        position = (ready_queue->front + i) % QUEUE_CAPACITY;
-        waiting_times[ready_queue->items[position]]++;
-    }
-}
-
-/* Progress I/O and return finished I/O processes to the FCFS ready queue. */
-static void run_io(WaitingQueue *waiting_queue,
-                   ReadyQueue *ready_queue,
-                   const Process processes[],
-                   ScheduleState states[],
-                   int waiting_count,
-                   int current_time,
-                   int *completed_count,
-                   int completion_times[],
-                   int turnaround_times[])
-{
-    int i;
-    int process_index;
-
-    for (i = 0; i < waiting_count; i++) {
-        int dequeued;
-
-        dequeued = queue_dequeue(waiting_queue, &process_index);
-        if (dequeued == 0) {
-            return;
-        }
-
-        states[process_index].io_remaining_time--;
-
-        if (states[process_index].io_remaining_time > 0) {
-            queue_enqueue(waiting_queue, process_index);
-            continue;
-        }
-
-        if (states[process_index].remaining_cpu_time == 0) {
-            scheduler_finish_process(&processes[process_index],
-                                     &states[process_index],
-                                     process_index,
-                                     current_time + 1,
-                                     completed_count,
-                                     completion_times,
-                                     turnaround_times);
-        } else {
-            queue_enqueue(ready_queue, process_index);
-        }
-    }
-}
-
-/* Run the FCFS simulation until every process is complete. */
-void scheduler_run_fcfs(void)
+/* Run the FCFS simulation and save its metric result. */
+static int run_fcfs(GanttChart *gantt_chart, ScheduleResult *result)
 {
     const Process *processes = process_get_all();
     int process_count = process_get_count();
-    GanttChart gantt_chart;
-    ReadyQueue initial_order;
     ReadyQueue ready_queue;
     WaitingQueue waiting_queue;
     ScheduleState states[MAX_PROCESSES];
@@ -165,22 +76,16 @@ void scheduler_run_fcfs(void)
     int running_process = -1;
 
     if (process_count == 0) {
-        printf("\nNo processes have been created yet.\n");
-        return;
+        return 0;
     }
 
     /* Prepare queues and metric arrays for this FCFS run. */
-    load_order(&initial_order, processes, process_count);
     queue_init(&ready_queue);
     queue_init(&waiting_queue);
     scheduler_reset_states(states, processes, process_count);
-    gantt_init(&gantt_chart);
-
-    printf("\n[FCFS Scheduling]\n");
-    printf("Tie-break rule: earlier arrival time, then smaller PID.\n");
-    printf("I/O rule: each process uses its own trigger:duration events.\n\n");
-
-    queue_print("Initial FCFS Order", &initial_order, processes);
+    if (gantt_chart != 0) {
+        gantt_init(gantt_chart);
+    }
 
     while (completed_count < process_count) {
         int waiting_count;
@@ -189,11 +94,11 @@ void scheduler_run_fcfs(void)
         next_time = current_time + 1;
 
         /* New arrivals enter the FIFO ready queue at this time tick. */
-        admit_arrivals(&ready_queue,
-                       processes,
-                       process_count,
-                       states,
-                       current_time);
+        scheduler_fifo_admit(&ready_queue,
+                             processes,
+                             process_count,
+                             states,
+                             current_time);
 
         /* FCFS only selects a new process when the CPU is idle. */
         if (running_process == -1) {
@@ -210,23 +115,23 @@ void scheduler_run_fcfs(void)
 
         /* Run the CPU for one tick, or record IDLE if nobody is ready. */
         if (running_process == -1) {
-            gantt_add_segment(&gantt_chart,
-                              current_time,
-                              next_time,
-                              GANTT_IDLE_PID);
+            scheduler_add_gantt(gantt_chart,
+                                current_time,
+                                next_time,
+                                GANTT_IDLE_PID);
         } else {
             const Process *process = &processes[running_process];
 
             states[running_process].remaining_cpu_time--;
             states[running_process].executed_cpu_time++;
-            gantt_add_segment(&gantt_chart,
-                              current_time,
-                              next_time,
-                              process->pid);
+            scheduler_add_gantt(gantt_chart,
+                                current_time,
+                                next_time,
+                                process->pid);
         }
 
         /* Ready Queue time is the waiting time measured for CPU scheduling. */
-        count_wait(&ready_queue, waiting_times);
+        scheduler_fifo_count_wait(&ready_queue, waiting_times);
 
         /* After one CPU tick, the running process may request I/O or finish. */
         if (running_process != -1) {
@@ -258,17 +163,59 @@ void scheduler_run_fcfs(void)
         }
 
         /* I/O runs independently, then finished I/O returns to Ready Queue. */
-        run_io(&waiting_queue,
-               &ready_queue,
-               processes,
-               states,
-               waiting_count,
-               current_time,
-               &completed_count,
-               completion_times,
-               turnaround_times);
+        scheduler_fifo_run_io(&waiting_queue,
+                              &ready_queue,
+                              processes,
+                              states,
+                              waiting_count,
+                              current_time,
+                              &completed_count,
+                              completion_times,
+                              turnaround_times);
 
         current_time++;
+    }
+
+    scheduler_save_result(result,
+                          process_count,
+                          current_time,
+                          completion_times,
+                          waiting_times,
+                          turnaround_times);
+    return 1;
+}
+
+/* Build only the FCFS metric result for the comparison table. */
+int scheduler_fcfs_result(ScheduleResult *result)
+{
+    return run_fcfs(0, result);
+}
+
+/* Run the FCFS simulation until every process is complete. */
+void scheduler_run_fcfs(void)
+{
+    const Process *processes = process_get_all();
+    int process_count = process_get_count();
+    GanttChart gantt_chart;
+    ReadyQueue initial_order;
+    ScheduleResult result;
+    int ran;
+
+    if (process_count == 0) {
+        printf("\nNo processes have been created yet.\n");
+        return;
+    }
+
+    printf("\n[FCFS Scheduling]\n");
+    printf("Tie-break rule: earlier arrival time, then smaller PID.\n");
+    printf("I/O rule: each process uses its own trigger:duration events.\n\n");
+
+    load_order(&initial_order, processes, process_count);
+    queue_print("Initial FCFS Order", &initial_order, processes);
+
+    ran = run_fcfs(&gantt_chart, &result);
+    if (ran == 0) {
+        return;
     }
 
     /* Print the full result after all processes complete. */
@@ -277,7 +224,7 @@ void scheduler_run_fcfs(void)
     scheduler_print_metrics("FCFS",
                             processes,
                             process_count,
-                            completion_times,
-                            waiting_times,
-                            turnaround_times);
+                            result.completion_times,
+                            result.waiting_times,
+                            result.turnaround_times);
 }

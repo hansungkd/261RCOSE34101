@@ -84,13 +84,6 @@ static int read_menu_option(void)
     return choice;
 }
 
-/* Print a placeholder for menu items not implemented yet. */
-static void print_todo(const char *feature)
-{
-    printf("\n[%s]\n", feature);
-    printf("This feature will be implemented later.\n");
-}
-
 /* Dispatch one validated menu option to the matching feature. */
 static void handle_menu_option(int option)
 {
@@ -120,7 +113,7 @@ static void handle_menu_option(int option)
         scheduler_run_round_robin();
         break;
     case MENU_COMPARE_RESULTS:
-        print_todo("Compare scheduling results");
+        scheduler_compare_results();
         break;
     case MENU_EXIT:
         printf("Bye.\n");
