@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+#include "config.h"
 #include "scheduler_internal.h"
 
 /* Discard leftover input after a bad scheduler option value. */
@@ -49,6 +50,25 @@ int scheduler_read_time_quantum(void)
     }
 
     return quantum;
+}
+
+/* Print the queue and scheduler configuration used by the simulator. */
+void scheduler_print_config(void)
+{
+    printf("\n[System Configuration]\n");
+    printf("CPU: single CPU simulator\n");
+    printf("Context switch time: 0\n");
+    printf("Waiting time: counted only while a process is in Ready Queue\n");
+    printf("I/O model: Waiting Queue runs independently from CPU scheduling\n");
+    printf("\nReady Queue\n");
+    printf("- FCFS and Round Robin use FIFO queue order.\n");
+    printf("- SJF uses a PriorityQueue ordered by shortest next CPU run.\n");
+    printf("- Priority uses a PriorityQueue ordered by smaller priority number.\n");
+    printf("\nWaiting Queue\n");
+    printf("- A process moves here when its I/O trigger is reached.\n");
+    printf("- After I/O finishes, the process returns to the matching Ready Queue.\n");
+
+    config_print();
 }
 
 /* Reset per-run state so each algorithm starts from the same workload. */

@@ -20,20 +20,18 @@ make
 - Build system through `Makefile`
 - `Process` structure with PID, arrival time, CPU burst, I/O burst, and priority
 - Sample in-memory process table
-- Menu option 1 creates a random process set
-- Menu option 2 prints the current process set
-- Menu option 3 runs a first FCFS scheduler using CPU burst time
-- Menu option 4 runs Non-Preemptive SJF scheduling
-- Menu option 5 runs Preemptive SJF scheduling
-- Menu option 6 runs Non-Preemptive Priority scheduling
-- Menu option 7 runs Preemptive Priority scheduling
-- Menu option 8 runs Round Robin scheduling
-- Menu option 9 compares scheduling results
+- Top-level menu follows Create_Process, Config, Schedule, Evaluation
+- Create_Process submenu creates and prints process sets
+- Config submenu prints and updates runtime simulator settings
+- Schedule submenu runs FCFS, SJF, Priority, and Round Robin
+- Evaluation submenu compares scheduling results
+- `config.c` / `config.h` provide runtime configuration values
 - `queue.c` / `queue.h` provide FIFO Queue base structures
 - `priority_queue.c` / `priority_queue.h` provide heap-based Priority Queue selection
 - `gantt.c` / `gantt.h` provide Gantt Chart output
 - Process list accessor functions for future scheduler modules
 - `scheduler.c` / `scheduler_internal.h` provide shared scheduling helpers
+- `scheduler.c` prints queue/system configuration
 - `scheduler_fcfs.c` provides FCFS scheduling
 - `scheduler_sjf.c` provides Non-Preemptive and Preemptive SJF scheduling
 - `scheduler_priority.c` provides Non-Preemptive and Preemptive Priority scheduling
@@ -51,16 +49,16 @@ make
 - Round Robin asks for a time quantum and requeues unfinished processes when it expires
 - Result comparison runs all implemented algorithms on the same current process set
 
-Current random ranges:
+Default runtime random ranges:
 
+- Process limit: 10, bounded by `MAX_PROCESSES`
 - Arrival time: 0-9
 - CPU burst time: 1-10
-- I/O event count: 0-3, limited by CPU burst time
+- I/O event count: 0-3, bounded by `MAX_IO_EVENTS` and CPU burst time
 - I/O trigger time: after 1 to `CPU burst - 1` CPU time units
 - I/O duration per event: 1-5
 - Priority: 1-5, where a smaller number means higher priority
 
 ## Plan
 
-1. Code Refactoring 
-2. Add fixed input file support.
+1. Add fixed input file support.

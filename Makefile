@@ -1,7 +1,7 @@
 CC ?= gcc
 CFLAGS ?= -std=c11 -Wall -Wextra -pedantic -O2
 TARGET := scheduler
-OBJS := main.o process.o queue.o priority_queue.o gantt.o scheduler.o \
+OBJS := main.o config.o process.o queue.o priority_queue.o gantt.o scheduler.o \
 	scheduler_fcfs.o scheduler_sjf.o scheduler_priority.o scheduler_rr.o \
 	scheduler_compare.o
 

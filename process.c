@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include "config.h"
 #include "process.h"
 
 /* Default data */
@@ -105,6 +106,7 @@ static void sort_io(Process *process)
 /* Generate random I/O event count, trigger times, and durations. */
 static void randomize_io(Process *process)
 {
+    const SimulatorConfig *config = config_get();
     int max_event_count;
     int i;
 
@@ -116,8 +118,8 @@ static void randomize_io(Process *process)
     }
 
     max_event_count = process->cpu_burst_time - 1;
-    if (max_event_count > MAX_IO_EVENTS) {
-        max_event_count = MAX_IO_EVENTS;
+    if (max_event_count > config->io_event_limit) {
+        max_event_count = config->io_event_limit;
     }
 
     process->io_event_count = random_between(0, max_event_count);
@@ -133,7 +135,8 @@ static void randomize_io(Process *process)
         }
 
         process->io_events[i].trigger_time = trigger_time;
-        process->io_events[i].duration = random_between(1, 5);
+        process->io_events[i].duration = random_between(1,
+                                                        config->io_duration_max);
         process->io_burst_time += process->io_events[i].duration;
     }
 
@@ -165,11 +168,12 @@ static void print_io(const Process *process)
 /* Replace the current process set with randomly generated processes. */
 void process_create_random(void)
 {
+    const SimulatorConfig *config = config_get();
     int count;
     int i;
     int result;
 
-    printf("\nNumber of processes (1-%d): ", MAX_PROCESSES);
+    printf("\nNumber of processes (1-%d): ", config->process_limit);
     result = scanf("%d", &count);
     if (result != 1) {
         printf("Invalid process count.\n");
@@ -178,12 +182,14 @@ void process_create_random(void)
     }
 
     if (count < 1) {
-        printf("Process count must be between 1 and %d.\n", MAX_PROCESSES);
+        printf("Process count must be between 1 and %d.\n",
+               config->process_limit);
         return;
     }
 
-    if (count > MAX_PROCESSES) {
-        printf("Process count must be between 1 and %d.\n", MAX_PROCESSES);
+    if (count > config->process_limit) {
+        printf("Process count must be between 1 and %d.\n",
+               config->process_limit);
         return;
     }
 
@@ -192,9 +198,12 @@ void process_create_random(void)
 
     for (i = 0; i < process_count; i++) {
         processes[i].pid = i + 1;
-        processes[i].arrival_time = random_between(0, 9);
-        processes[i].cpu_burst_time = random_between(1, 10);
-        processes[i].priority = random_between(1, 5);
+        processes[i].arrival_time = random_between(0,
+                                                   config->arrival_time_max);
+        processes[i].cpu_burst_time = random_between(1,
+                                                     config->cpu_burst_max);
+        processes[i].priority = random_between(1,
+                                               config->priority_max);
         randomize_io(&processes[i]);
     }
 
