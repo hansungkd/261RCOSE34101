@@ -28,7 +28,7 @@ make
 - `config.c` / `config.h` provide runtime configuration values
 - `queue.c` / `queue.h` provide FIFO Queue base structures
 - `priority_queue.c` / `priority_queue.h` provide heap-based Priority Queue selection
-- `gantt.c` / `gantt.h` provide Gantt Chart output
+- `gantt.c` / `gantt.h` provide dynamically growing Gantt Chart output
 - Process list accessor functions for future scheduler modules
 - `scheduler.c` / `scheduler_internal.h` provide shared scheduling helpers
 - `scheduler.c` prints queue/system configuration

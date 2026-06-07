@@ -29,7 +29,8 @@ void config_print(void)
     printf("MAX_IO_EVENTS: %d\n", MAX_IO_EVENTS);
     printf("QUEUE_CAPACITY: %d\n", QUEUE_CAPACITY);
     printf("PQ_CAPACITY: %d\n", PQ_CAPACITY);
-    printf("MAX_GANTT_SEGMENTS: %d\n", MAX_GANTT_SEGMENTS);
+    printf("GANTT_INITIAL_CAPACITY: %d, grows dynamically\n",
+           GANTT_INITIAL_CAPACITY);
 
     printf("\nRuntime Configuration\n");
     printf("---------------------\n");

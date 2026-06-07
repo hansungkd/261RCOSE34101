@@ -308,6 +308,7 @@ void scheduler_run_nonpreemptive_sjf(void)
                             result.completion_times,
                             result.waiting_times,
                             result.turnaround_times);
+    gantt_free(&gantt_chart);
 }
 
 /* Run preemptive SJF by rechecking the shortest ready job every tick. */
@@ -344,4 +345,5 @@ void scheduler_run_preemptive_sjf(void)
                             result.completion_times,
                             result.waiting_times,
                             result.turnaround_times);
+    gantt_free(&gantt_chart);
 }

@@ -227,4 +227,5 @@ void scheduler_run_fcfs(void)
                             result.completion_times,
                             result.waiting_times,
                             result.turnaround_times);
+    gantt_free(&gantt_chart);
 }

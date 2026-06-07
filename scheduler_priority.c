@@ -274,6 +274,7 @@ void scheduler_run_nonpreemptive_priority(void)
                             result.completion_times,
                             result.waiting_times,
                             result.turnaround_times);
+    gantt_free(&gantt_chart);
 }
 
 /* Run preemptive Priority scheduling until every process is complete. */
@@ -310,4 +311,5 @@ void scheduler_run_preemptive_priority(void)
                             result.completion_times,
                             result.waiting_times,
                             result.turnaround_times);
+    gantt_free(&gantt_chart);
 }

@@ -1,8 +1,37 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "gantt.h"
 
 #define GANTT_CELL_WIDTH 8
+
+/* Make room for one more segment. The array grows as the chart gets longer. */
+static int ensure_capacity(GanttChart *chart)
+{
+    GanttSegment *new_segments;
+    int new_capacity;
+
+    if (chart->count < chart->capacity) {
+        return 1;
+    }
+
+    if (chart->capacity == 0) {
+        new_capacity = GANTT_INITIAL_CAPACITY;
+    } else {
+        new_capacity = chart->capacity * 2;
+    }
+
+    new_segments = realloc(chart->segments,
+                           sizeof(GanttSegment) * new_capacity);
+    if (new_segments == NULL) {
+        chart->truncated = 1;
+        return 0;
+    }
+
+    chart->segments = new_segments;
+    chart->capacity = new_capacity;
+    return 1;
+}
 
 /* Print one Gantt cell label for either a process or IDLE time. */
 static void print_segment_label(int pid)
@@ -18,13 +47,30 @@ static void print_segment_label(int pid)
 /* Start an empty Gantt chart. */
 void gantt_init(GanttChart *chart)
 {
+    chart->segments = NULL;
     chart->count = 0;
+    chart->capacity = 0;
+    chart->truncated = 0;
+}
+
+/* Release memory used by a dynamically grown Gantt chart. */
+void gantt_free(GanttChart *chart)
+{
+    free(chart->segments);
+    chart->segments = NULL;
+    chart->count = 0;
+    chart->capacity = 0;
+    chart->truncated = 0;
 }
 
 /* Add a segment, merging adjacent segments for the same process. */
 int gantt_add_segment(GanttChart *chart, int start_time, int end_time, int pid)
 {
     GanttSegment *last;
+
+    if (chart == NULL) {
+        return 0;
+    }
 
     if (start_time >= end_time) {
         return 1;
@@ -39,7 +85,7 @@ int gantt_add_segment(GanttChart *chart, int start_time, int end_time, int pid)
         }
     }
 
-    if (chart->count >= MAX_GANTT_SEGMENTS) {
+    if (ensure_capacity(chart) == 0) {
         return 0;
     }
 
@@ -61,6 +107,10 @@ void gantt_print_timeline(const GanttChart *chart)
     if (chart->count == 0) {
         printf("(empty)\n");
         return;
+    }
+
+    if (chart->truncated) {
+        printf("Warning: Gantt chart output is incomplete because memory allocation failed.\n");
     }
 
     printf("Start    End  Process\n");

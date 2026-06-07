@@ -1,7 +1,7 @@
 #ifndef GANTT_H
 #define GANTT_H
 
-#define MAX_GANTT_SEGMENTS 200
+#define GANTT_INITIAL_CAPACITY 64
 #define GANTT_IDLE_PID -1
 
 typedef struct {
@@ -11,11 +11,14 @@ typedef struct {
 } GanttSegment;
 
 typedef struct {
-    GanttSegment segments[MAX_GANTT_SEGMENTS];
+    GanttSegment *segments;
     int count;
+    int capacity;
+    int truncated;
 } GanttChart;
 
 void gantt_init(GanttChart *chart);
+void gantt_free(GanttChart *chart);
 int gantt_add_segment(GanttChart *chart, int start_time, int end_time, int pid);
 void gantt_print_timeline(const GanttChart *chart);
 void gantt_print(const GanttChart *chart);
