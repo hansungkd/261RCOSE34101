@@ -71,6 +71,7 @@ static int run_fcfs(GanttChart *gantt_chart, ScheduleResult *result)
     int completion_times[MAX_PROCESSES] = {0};
     int waiting_times[MAX_PROCESSES] = {0};
     int turnaround_times[MAX_PROCESSES] = {0};
+    int response_times[MAX_PROCESSES];
     int current_time = 0;
     int completed_count = 0;
     int running_process = -1;
@@ -83,6 +84,7 @@ static int run_fcfs(GanttChart *gantt_chart, ScheduleResult *result)
     queue_init(&ready_queue);
     queue_init(&waiting_queue);
     scheduler_reset_states(states, processes, process_count);
+    scheduler_init_responses(response_times);
     if (gantt_chart != 0) {
         gantt_init(gantt_chart);
     }
@@ -122,6 +124,10 @@ static int run_fcfs(GanttChart *gantt_chart, ScheduleResult *result)
         } else {
             const Process *process = &processes[running_process];
 
+            scheduler_mark_response(process,
+                                    running_process,
+                                    current_time,
+                                    response_times);
             states[running_process].remaining_cpu_time--;
             states[running_process].executed_cpu_time++;
             scheduler_add_gantt(gantt_chart,
@@ -177,11 +183,13 @@ static int run_fcfs(GanttChart *gantt_chart, ScheduleResult *result)
     }
 
     scheduler_save_result(result,
+                          processes,
                           process_count,
                           current_time,
                           completion_times,
                           waiting_times,
-                          turnaround_times);
+                          turnaround_times,
+                          response_times);
     return 1;
 }
 
@@ -224,8 +232,6 @@ void scheduler_run_fcfs(void)
     scheduler_print_metrics("FCFS",
                             processes,
                             process_count,
-                            result.completion_times,
-                            result.waiting_times,
-                            result.turnaround_times);
+                            &result);
     gantt_free(&gantt_chart);
 }

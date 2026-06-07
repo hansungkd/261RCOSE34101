@@ -342,6 +342,29 @@ int scheduler_io_due(const Process *process, const ScheduleState *state)
     return state->executed_cpu_time == trigger_time;
 }
 
+/* Fill response times with -1 so the first CPU run can be detected. */
+void scheduler_init_responses(int response_times[])
+{
+    int i;
+
+    for (i = 0; i < MAX_PROCESSES; i++) {
+        response_times[i] = -1;
+    }
+}
+
+/* Record how long a process waited before receiving CPU for the first time. */
+void scheduler_mark_response(const Process *process,
+                             int process_index,
+                             int current_time,
+                             int response_times[])
+{
+    if (response_times[process_index] != -1) {
+        return;
+    }
+
+    response_times[process_index] = current_time - process->arrival_time;
+}
+
 /* Move a running process into the waiting queue for its next I/O event. */
 void scheduler_start_io(WaitingQueue *waiting_queue,
                         const Process *process,
@@ -378,49 +401,53 @@ void scheduler_finish_process(const Process *process,
 void scheduler_print_metrics(const char *algorithm_name,
                              const Process processes[],
                              int process_count,
-                             const int completion_times[],
-                             const int waiting_times[],
-                             const int turnaround_times[])
+                             const ScheduleResult *result)
 {
     int i;
-    int total_waiting_time = 0;
-    int total_turnaround_time = 0;
 
     printf("\n%s Metrics\n", algorithm_name);
-    printf("PID  Arrival  CPU Burst  I/O Total  Completion  Waiting  Turnaround\n");
-    printf("---  -------  ---------  ---------  ----------  -------  ----------\n");
+    printf("PID  Arrival  CPU Burst  I/O Total  Completion  Waiting  Turnaround  Response\n");
+    printf("---  -------  ---------  ---------  ----------  -------  ----------  --------\n");
 
     for (i = 0; i < process_count; i++) {
-        total_waiting_time += waiting_times[i];
-        total_turnaround_time += turnaround_times[i];
-
-        printf("P%-3d %-8d %-10d %-10d %-11d %-8d %-10d\n",
+        printf("P%-3d %-8d %-10d %-10d %-11d %-8d %-11d %-8d\n",
                processes[i].pid,
                processes[i].arrival_time,
                processes[i].cpu_burst_time,
                processes[i].io_burst_time,
-               completion_times[i],
-               waiting_times[i],
-               turnaround_times[i]);
+               result->completion_times[i],
+               result->waiting_times[i],
+               result->turnaround_times[i],
+               result->response_times[i]);
     }
 
     printf("\nAverage Waiting Time: %.2f\n",
-           (double)total_waiting_time / process_count);
+           result->average_waiting_time);
     printf("Average Turnaround Time: %.2f\n",
-           (double)total_turnaround_time / process_count);
+           result->average_turnaround_time);
+    printf("Average Response Time: %.2f\n",
+           result->average_response_time);
+    printf("CPU Utilization: %.2f%%\n",
+           result->cpu_utilization);
+    printf("Throughput: %.4f processes/time unit\n",
+           result->throughput);
 }
 
 /* Copy one simulation's metrics into a reusable result object. */
 void scheduler_save_result(ScheduleResult *result,
+                           const Process processes[],
                            int process_count,
                            int finish_time,
                            const int completion_times[],
                            const int waiting_times[],
-                           const int turnaround_times[])
+                           const int turnaround_times[],
+                           const int response_times[])
 {
     int i;
     int total_waiting_time = 0;
     int total_turnaround_time = 0;
+    int total_response_time = 0;
+    int total_cpu_time = 0;
 
     if (result == 0) {
         return;
@@ -430,25 +457,39 @@ void scheduler_save_result(ScheduleResult *result,
         result->completion_times[i] = 0;
         result->waiting_times[i] = 0;
         result->turnaround_times[i] = 0;
+        result->response_times[i] = 0;
     }
 
     for (i = 0; i < process_count; i++) {
         result->completion_times[i] = completion_times[i];
         result->waiting_times[i] = waiting_times[i];
         result->turnaround_times[i] = turnaround_times[i];
+        result->response_times[i] = response_times[i];
 
         total_waiting_time += waiting_times[i];
         total_turnaround_time += turnaround_times[i];
+        total_response_time += response_times[i];
+        total_cpu_time += processes[i].cpu_burst_time;
     }
 
     result->finish_time = finish_time;
     result->average_waiting_time = 0.0;
     result->average_turnaround_time = 0.0;
+    result->average_response_time = 0.0;
+    result->cpu_utilization = 0.0;
+    result->throughput = 0.0;
 
     if (process_count > 0) {
         result->average_waiting_time =
             (double)total_waiting_time / process_count;
         result->average_turnaround_time =
             (double)total_turnaround_time / process_count;
+        result->average_response_time =
+            (double)total_response_time / process_count;
+    }
+
+    if (finish_time > 0) {
+        result->cpu_utilization = (double)total_cpu_time / finish_time * 100.0;
+        result->throughput = (double)process_count / finish_time;
     }
 }

@@ -72,14 +72,17 @@ static void print_table(const CompareRow rows[], int row_count)
     int i;
 
     printf("\nComparison Table\n");
-    printf("Algorithm                     Avg Waiting  Avg Turnaround  Finish Time\n");
-    printf("----------------------------  -----------  --------------  -----------\n");
+    printf("Algorithm                     Avg Wait  Avg Turn  Avg Resp  CPU Util  Throughput  Finish\n");
+    printf("----------------------------  --------  --------  --------  --------  ----------  ------\n");
 
     for (i = 0; i < row_count; i++) {
-        printf("%-28s  %11.2f  %14.2f  %11d\n",
+        printf("%-28s  %8.2f  %8.2f  %8.2f  %7.2f%%  %10.4f  %6d\n",
                rows[i].name,
                rows[i].result.average_waiting_time,
                rows[i].result.average_turnaround_time,
+               rows[i].result.average_response_time,
+               rows[i].result.cpu_utilization,
+               rows[i].result.throughput,
                rows[i].result.finish_time);
     }
 }

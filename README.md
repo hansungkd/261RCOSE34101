@@ -48,6 +48,7 @@ make
 - Preemptive Priority checks for higher-priority ready jobs at every time tick
 - Round Robin asks for a time quantum and requeues unfinished processes when it expires
 - Result comparison runs all implemented algorithms on the same current process set
+- Additional metrics: average response time, CPU utilization, and throughput
 
 Default runtime random ranges:
 

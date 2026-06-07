@@ -20,8 +20,12 @@ typedef struct {
     int completion_times[MAX_PROCESSES];
     int waiting_times[MAX_PROCESSES];
     int turnaround_times[MAX_PROCESSES];
+    int response_times[MAX_PROCESSES];
     double average_waiting_time;
     double average_turnaround_time;
+    double average_response_time;
+    double cpu_utilization;
+    double throughput;
     int finish_time;
 } ScheduleResult;
 
@@ -74,6 +78,11 @@ void scheduler_pq_run_io(WaitingQueue *waiting_queue,
                          int completion_times[],
                          int turnaround_times[]);
 int scheduler_io_due(const Process *process, const ScheduleState *state);
+void scheduler_init_responses(int response_times[]);
+void scheduler_mark_response(const Process *process,
+                             int process_index,
+                             int current_time,
+                             int response_times[]);
 void scheduler_start_io(WaitingQueue *waiting_queue,
                         const Process *process,
                         ScheduleState states[],
@@ -88,15 +97,15 @@ void scheduler_finish_process(const Process *process,
 void scheduler_print_metrics(const char *algorithm_name,
                              const Process processes[],
                              int process_count,
-                             const int completion_times[],
-                             const int waiting_times[],
-                             const int turnaround_times[]);
+                             const ScheduleResult *result);
 void scheduler_save_result(ScheduleResult *result,
+                           const Process processes[],
                            int process_count,
                            int finish_time,
                            const int completion_times[],
                            const int waiting_times[],
-                           const int turnaround_times[]);
+                           const int turnaround_times[],
+                           const int response_times[]);
 
 int scheduler_fcfs_result(ScheduleResult *result);
 int scheduler_nonpreemptive_sjf_result(ScheduleResult *result);
