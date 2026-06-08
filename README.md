@@ -25,7 +25,7 @@ make
 - Create_Process submenu can load a fixed process set from an input file
 - Config submenu prints and updates runtime simulator settings
 - Schedule submenu runs FCFS, SJF, Priority, and Round Robin
-- Evaluation submenu compares scheduling results
+- Evaluation submenu compares a single run and aggregates many random workloads
 - `config.c` / `config.h` provide runtime configuration values
 - `queue.c` / `queue.h` provide FIFO Queue base structures
 - `priority_queue.c` / `priority_queue.h` provide heap-based Priority Queue selection
@@ -49,6 +49,9 @@ make
 - Preemptive Priority checks for higher-priority ready jobs at every time tick
 - Round Robin asks for a time quantum and requeues unfinished processes when it expires
 - Result comparison runs all implemented algorithms on the same current process set
+- Statistical comparison runs many random workloads and reports per-algorithm mean,
+  standard deviation, waiting-time min/max, and best-rate (share of workloads won)
+- Statistical comparison is reproducible by seed and restores the current process set
 - Additional metrics: average response time, CPU utilization, and throughput
 - Long Gantt output is split into readable pages with Enter prompts
 - Create random process asks for a seed; 0 uses a time-based seed

@@ -46,6 +46,7 @@ typedef enum {
 
 typedef enum {
     EVALUATION_COMPARE_RESULTS = 1,
+    EVALUATION_COMPARE_STATISTICS,
     EVALUATION_BACK = 0
 } EvaluationMenuOption;
 
@@ -142,7 +143,8 @@ static void print_evaluation_menu(void)
     printf("\n");
     printf("Evaluation\n");
     printf("==========\n");
-    printf("1. Compare scheduling results\n");
+    printf("1. Compare scheduling results (current process set)\n");
+    printf("2. Compare over many random workloads (statistics)\n");
     printf("0. Back\n");
     printf("Select: ");
 }
@@ -369,11 +371,14 @@ static void handle_evaluation_menu(void)
 
     do {
         print_evaluation_menu();
-        option = read_menu_option(EVALUATION_COMPARE_RESULTS);
+        option = read_menu_option(EVALUATION_COMPARE_STATISTICS);
 
         switch (option) {
         case EVALUATION_COMPARE_RESULTS:
             scheduler_compare_results();
+            break;
+        case EVALUATION_COMPARE_STATISTICS:
+            scheduler_compare_statistics();
             break;
         case EVALUATION_BACK:
             break;

@@ -56,8 +56,8 @@ static void clear_io(Process *process)
     }
 }
 
-/* Seed rand() for this random process creation. Seed 0 means time-based. */
-static void seed_random_for_creation(int seed)
+/* Seed rand() for random process creation. Seed 0 means time-based. */
+void process_seed_random(int seed)
 {
     if (seed == 0) {
         unsigned int time_seed;
@@ -194,13 +194,37 @@ static void print_io(const Process *process)
     }
 }
 
+/* Fill the global process set with `count` random processes. */
+void process_generate_random(int count)
+{
+    const SimulatorConfig *config = config_get();
+    int i;
+
+    if (count < 1) {
+        return;
+    }
+
+    if (count > MAX_PROCESSES) {
+        count = MAX_PROCESSES;
+    }
+
+    process_count = count;
+
+    for (i = 0; i < process_count; i++) {
+        processes[i].pid = i + 1;
+        processes[i].arrival_time = random_between(0, config->arrival_time_max);
+        processes[i].cpu_burst_time = random_between(1, config->cpu_burst_max);
+        processes[i].priority = random_between(1, config->priority_max);
+        randomize_io(&processes[i]);
+    }
+}
+
 /* Replace the current process set with randomly generated processes. */
 void process_create_random(void)
 {
     const SimulatorConfig *config = config_get();
     int count;
     int seed;
-    int i;
     int result;
 
     printf("\nNumber of processes (1-%d): ", config->process_limit);
@@ -229,19 +253,8 @@ void process_create_random(void)
         return;
     }
 
-    seed_random_for_creation(seed);
-    process_count = count;
-
-    for (i = 0; i < process_count; i++) {
-        processes[i].pid = i + 1;
-        processes[i].arrival_time = random_between(0,
-                                                   config->arrival_time_max);
-        processes[i].cpu_burst_time = random_between(1,
-                                                     config->cpu_burst_max);
-        processes[i].priority = random_between(1,
-                                               config->priority_max);
-        randomize_io(&processes[i]);
-    }
+    process_seed_random(seed);
+    process_generate_random(count);
 
     if (seed == 0) {
         printf("Created %d random processes with time-based seed.\n",
@@ -554,4 +567,24 @@ const Process *process_get_at(int index)
     }
 
     return &processes[index];
+}
+
+/* Overwrite the global process set with a saved snapshot. */
+void process_restore_set(const Process source[], int count)
+{
+    int i;
+
+    if (count < 0) {
+        count = 0;
+    }
+
+    if (count > MAX_PROCESSES) {
+        count = MAX_PROCESSES;
+    }
+
+    for (i = 0; i < count; i++) {
+        processes[i] = source[i];
+    }
+
+    process_count = count;
 }
