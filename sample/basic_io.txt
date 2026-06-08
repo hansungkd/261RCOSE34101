@@ -1,0 +1,5 @@
+# Basic sample with I/O events.
+# Format: pid arrival cpu priority io_count [trigger duration]...
+1 0 8 2 1 4 3
+2 1 4 1 1 2 2
+3 2 9 3 0

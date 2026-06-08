@@ -1,0 +1,6 @@
+# All processes arrive at the same time. Useful for tie-break checking.
+# Format: pid arrival cpu priority io_count [trigger duration]...
+1 0 7 3 0
+2 0 3 1 0
+3 0 5 2 1 2 2
+4 0 4 4 0

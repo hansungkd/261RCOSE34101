@@ -1,9 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "config.h"
 #include "process.h"
 #include "scheduler.h"
+
+#define INPUT_PATH_LENGTH 256
 
 typedef enum {
     MAIN_CREATE_PROCESS = 1,
@@ -15,6 +18,7 @@ typedef enum {
 
 typedef enum {
     PROCESS_CREATE_RANDOM = 1,
+    PROCESS_LOAD_FILE,
     PROCESS_PRINT_ALL,
     PROCESS_BACK = 0
 } ProcessMenuOption;
@@ -66,7 +70,8 @@ static void print_process_menu(void)
     printf("Create_Process\n");
     printf("==============\n");
     printf("1. Create random process set\n");
-    printf("2. Print current process set\n");
+    printf("2. Load process set from input file\n");
+    printf("3. Print current process set\n");
     printf("0. Back\n");
     printf("Select: ");
 }
@@ -86,6 +91,33 @@ static void print_config_menu(void)
     printf("7. Set max priority\n");
     printf("0. Back\n");
     printf("Select: ");
+}
+
+/* Read an input file path for fixed process loading. */
+static int read_input_path(char path[])
+{
+    int length;
+
+    printf("Input file path: ");
+    if (fgets(path, INPUT_PATH_LENGTH, stdin) == NULL) {
+        printf("Invalid input file path.\n");
+        return 0;
+    }
+
+    length = (int)strlen(path);
+    if (length > 0) {
+        if (path[length - 1] == '\n') {
+            path[length - 1] = '\0';
+            length--;
+        }
+    }
+
+    if (length == 0) {
+        printf("Input file path cannot be empty.\n");
+        return 0;
+    }
+
+    return 1;
 }
 
 /* Print the scheduling algorithm submenu. */
@@ -220,6 +252,15 @@ static void handle_process_menu(void)
         case PROCESS_CREATE_RANDOM:
             process_create_random();
             break;
+        case PROCESS_LOAD_FILE:
+        {
+            char path[INPUT_PATH_LENGTH];
+
+            if (read_input_path(path)) {
+                process_load_from_file(path);
+            }
+            break;
+        }
         case PROCESS_PRINT_ALL:
             process_print_all();
             break;

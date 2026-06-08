@@ -1,0 +1,5 @@
+# I/O-heavy sample. CPU may become IDLE while processes wait for I/O.
+# Format: pid arrival cpu priority io_count [trigger duration]...
+1 0 6 2 2 2 5 4 3
+2 0 5 1 1 1 4
+3 7 4 3 1 2 3

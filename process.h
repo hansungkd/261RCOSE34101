@@ -20,6 +20,7 @@ typedef struct {
 } Process;
 
 void process_create_random(void);
+int process_load_from_file(const char *path);
 void process_print_all(void);
 int process_get_count(void);
 const Process *process_get_all(void);

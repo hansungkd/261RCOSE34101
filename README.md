@@ -22,6 +22,7 @@ make
 - Sample in-memory process table
 - Top-level menu follows Create_Process, Config, Schedule, Evaluation
 - Create_Process submenu creates and prints process sets
+- Create_Process submenu can load a fixed process set from an input file
 - Config submenu prints and updates runtime simulator settings
 - Schedule submenu runs FCFS, SJF, Priority, and Round Robin
 - Evaluation submenu compares scheduling results
@@ -50,6 +51,7 @@ make
 - Result comparison runs all implemented algorithms on the same current process set
 - Additional metrics: average response time, CPU utilization, and throughput
 - Long Gantt output is split into readable pages with Enter prompts
+- Create random process asks for a seed; 0 uses a time-based seed
 
 Default runtime random ranges:
 
@@ -61,6 +63,37 @@ Default runtime random ranges:
 - I/O duration per event: 1-5
 - Priority: 1-5, where a smaller number means higher priority
 
-## Plan
+## Fixed Input File Format
 
-1. Add fixed input file support.
+Each non-empty line describes one process:
+
+```text
+pid arrival_time cpu_burst_time priority io_event_count [io_trigger io_duration]...
+```
+
+Rules:
+
+- `pid` must be unique and positive
+- `arrival_time` must be 0 or greater
+- `cpu_burst_time` and `priority` must be positive
+- `io_event_count` must be between 0 and `MAX_IO_EVENTS`
+- each I/O trigger must be after at least 1 CPU time unit and before the process finishes
+- blank lines and text after `#` are ignored
+
+Example:
+
+```text
+# pid arrival cpu priority io_count [trigger duration]...
+1 0 8 2 1 4 3
+2 1 4 1 1 2 2
+3 2 9 3 0
+```
+
+Sample files are in the `sample/` directory:
+
+- `sample/basic_io.txt`
+- `sample/no_io.txt`
+- `sample/io_idle.txt`
+- `sample/same_arrival.txt`
+- `sample/priority_focus.txt`
+- `sample/round_robin_focus.txt`

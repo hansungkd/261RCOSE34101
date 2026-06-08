@@ -1,0 +1,7 @@
+# Round Robin-focused sample. Try quantum 1, 2, and 4.
+# Format: pid arrival cpu priority io_count [trigger duration]...
+1 0 9 3 0
+2 1 5 2 0
+3 2 7 1 1 3 2
+4 3 4 4 0
+5 4 6 5 0

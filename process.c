@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 #include "config.h"
@@ -55,15 +56,43 @@ static void clear_io(Process *process)
     }
 }
 
-/* Seed rand() once for this program run. */
-static void seed_random_once(void)
+/* Seed rand() for this random process creation. Seed 0 means time-based. */
+static void seed_random_for_creation(int seed)
 {
-    static int seeded = 0;
+    if (seed == 0) {
+        unsigned int time_seed;
 
-    if (!seeded) {
-        srand((unsigned int)time(NULL));
-        seeded = 1;
+        time_seed = (unsigned int)time(NULL);
+        time_seed = time_seed ^ (unsigned int)clock();
+        srand(time_seed);
+        return;
     }
+
+    srand((unsigned int)seed);
+}
+
+/* Read the seed used for this random generation. */
+static int read_random_seed(int *seed)
+{
+    int result;
+
+    printf("Random seed (0 for time-based): ");
+    result = scanf("%d", seed);
+
+    if (result != 1) {
+        printf("Invalid random seed.\n");
+        clear_input_buffer();
+        return 0;
+    }
+
+    clear_input_buffer();
+
+    if (*seed < 0) {
+        printf("Random seed must be 0 or greater.\n");
+        return 0;
+    }
+
+    return 1;
 }
 
 /* Check whether an I/O trigger time is already used by this process. */
@@ -170,6 +199,7 @@ void process_create_random(void)
 {
     const SimulatorConfig *config = config_get();
     int count;
+    int seed;
     int i;
     int result;
 
@@ -195,7 +225,11 @@ void process_create_random(void)
         return;
     }
 
-    seed_random_once();
+    if (!read_random_seed(&seed)) {
+        return;
+    }
+
+    seed_random_for_creation(seed);
     process_count = count;
 
     for (i = 0; i < process_count; i++) {
@@ -209,7 +243,265 @@ void process_create_random(void)
         randomize_io(&processes[i]);
     }
 
-    printf("Created %d random processes.\n", process_count);
+    if (seed == 0) {
+        printf("Created %d random processes with time-based seed.\n",
+               process_count);
+    } else {
+        printf("Created %d random processes with fixed seed %d.\n",
+               process_count,
+               seed);
+    }
+}
+
+/* Remove a trailing newline from a line read with fgets. */
+static void remove_newline(char *line)
+{
+    int length;
+
+    length = (int)strlen(line);
+    if (length == 0) {
+        return;
+    }
+
+    if (line[length - 1] == '\n') {
+        line[length - 1] = '\0';
+    }
+}
+
+/* Cut off comments so input files can explain their rows. */
+static void remove_comment(char *line)
+{
+    char *comment_start;
+
+    comment_start = strchr(line, '#');
+    if (comment_start != NULL) {
+        *comment_start = '\0';
+    }
+}
+
+/* Read one integer from a line and advance the cursor. */
+static int read_line_int(char **cursor, int *value)
+{
+    char *end;
+    long parsed_value;
+
+    parsed_value = strtol(*cursor, &end, 10);
+    if (end == *cursor) {
+        return 0;
+    }
+
+    *value = (int)parsed_value;
+    *cursor = end;
+    return 1;
+}
+
+/* Return whether the rest of the line has only whitespace. */
+static int line_finished(const char *cursor)
+{
+    while (*cursor != '\0') {
+        if (*cursor != ' ') {
+            if (*cursor != '\t') {
+                if (*cursor != '\r') {
+                    return 0;
+                }
+            }
+        }
+
+        cursor++;
+    }
+
+    return 1;
+}
+
+/* Check whether a PID has already appeared in the temporary input set. */
+static int pid_exists(const Process temp_processes[], int count, int pid)
+{
+    int i;
+
+    for (i = 0; i < count; i++) {
+        if (temp_processes[i].pid == pid) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+/* Validate one I/O trigger and duration read from an input file. */
+static int valid_io_event(const Process *process,
+                          int trigger_time,
+                          int duration)
+{
+    if (trigger_time <= 0) {
+        return 0;
+    }
+
+    if (trigger_time >= process->cpu_burst_time) {
+        return 0;
+    }
+
+    if (duration <= 0) {
+        return 0;
+    }
+
+    if (trigger_used(process, trigger_time)) {
+        return 0;
+    }
+
+    return 1;
+}
+
+/* Parse one file row: pid arrival cpu priority io_count [trigger duration]... */
+static int parse_process_line(char *line,
+                              Process temp_processes[],
+                              int temp_count,
+                              Process *process)
+{
+    char *cursor = line;
+    int io_event_count;
+    int i;
+
+    clear_io(process);
+
+    if (!read_line_int(&cursor, &process->pid)) {
+        return 0;
+    }
+
+    if (!read_line_int(&cursor, &process->arrival_time)) {
+        return 0;
+    }
+
+    if (!read_line_int(&cursor, &process->cpu_burst_time)) {
+        return 0;
+    }
+
+    if (!read_line_int(&cursor, &process->priority)) {
+        return 0;
+    }
+
+    if (!read_line_int(&cursor, &io_event_count)) {
+        return 0;
+    }
+
+    if (process->pid <= 0) {
+        return 0;
+    }
+
+    if (pid_exists(temp_processes, temp_count, process->pid)) {
+        return 0;
+    }
+
+    if (process->arrival_time < 0) {
+        return 0;
+    }
+
+    if (process->cpu_burst_time <= 0) {
+        return 0;
+    }
+
+    if (process->priority <= 0) {
+        return 0;
+    }
+
+    if (io_event_count < 0) {
+        return 0;
+    }
+
+    if (io_event_count > MAX_IO_EVENTS) {
+        return 0;
+    }
+
+    process->io_burst_time = 0;
+    process->io_event_count = 0;
+    for (i = 0; i < io_event_count; i++) {
+        int trigger_time;
+        int duration;
+
+        if (!read_line_int(&cursor, &trigger_time)) {
+            return 0;
+        }
+
+        if (!read_line_int(&cursor, &duration)) {
+            return 0;
+        }
+
+        if (!valid_io_event(process, trigger_time, duration)) {
+            return 0;
+        }
+
+        process->io_events[i].trigger_time = trigger_time;
+        process->io_events[i].duration = duration;
+        process->io_event_count++;
+        process->io_burst_time += duration;
+    }
+
+    if (!line_finished(cursor)) {
+        return 0;
+    }
+
+    sort_io(process);
+    return 1;
+}
+
+/* Replace the current process set with rows loaded from a fixed input file. */
+int process_load_from_file(const char *path)
+{
+    FILE *file;
+    Process temp_processes[MAX_PROCESSES];
+    char line[256];
+    int temp_count = 0;
+    int line_number = 0;
+    int i;
+
+    file = fopen(path, "r");
+    if (file == NULL) {
+        printf("Could not open input file: %s\n", path);
+        return 0;
+    }
+
+    while (fgets(line, sizeof(line), file) != NULL) {
+        Process process;
+
+        line_number++;
+        remove_newline(line);
+        remove_comment(line);
+
+        if (line_finished(line)) {
+            continue;
+        }
+
+        if (temp_count >= MAX_PROCESSES) {
+            printf("Input file has more than %d processes.\n", MAX_PROCESSES);
+            fclose(file);
+            return 0;
+        }
+
+        if (!parse_process_line(line, temp_processes, temp_count, &process)) {
+            printf("Invalid process input at line %d.\n", line_number);
+            printf("Format: pid arrival cpu_burst priority io_count");
+            printf(" [io_trigger io_duration]...\n");
+            fclose(file);
+            return 0;
+        }
+
+        temp_processes[temp_count] = process;
+        temp_count++;
+    }
+
+    fclose(file);
+
+    if (temp_count == 0) {
+        printf("Input file did not contain any process rows.\n");
+        return 0;
+    }
+
+    for (i = 0; i < temp_count; i++) {
+        processes[i] = temp_processes[i];
+    }
+
+    process_count = temp_count;
+    printf("Loaded %d processes from %s.\n", process_count, path);
+    return 1;
 }
 
 /* Print the process table currently used by scheduler runs. */
