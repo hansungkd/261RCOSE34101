@@ -44,6 +44,8 @@ int scheduler_read_time_quantum(void)
         return 0;
     }
 
+    clear_input_buffer();
+
     if (quantum < 1) {
         printf("Time quantum must be positive.\n");
         return 0;

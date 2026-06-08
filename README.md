@@ -49,6 +49,7 @@ make
 - Round Robin asks for a time quantum and requeues unfinished processes when it expires
 - Result comparison runs all implemented algorithms on the same current process set
 - Additional metrics: average response time, CPU utilization, and throughput
+- Long Gantt output is split into readable pages with Enter prompts
 
 Default runtime random ranges:
 

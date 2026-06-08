@@ -181,6 +181,8 @@ void process_create_random(void)
         return;
     }
 
+    clear_input_buffer();
+
     if (count < 1) {
         printf("Process count must be between 1 and %d.\n",
                config->process_limit);

@@ -4,6 +4,30 @@
 #include "gantt.h"
 
 #define GANTT_CELL_WIDTH 8
+#define TIMELINE_PAGE_ROWS 20
+#define GANTT_SEGMENTS_PER_ROW 8
+#define GANTT_ROWS_PER_PAGE 4
+
+/* Pause long output so the user can read one screen at a time. */
+static void wait_for_enter(void)
+{
+    int ch;
+
+    printf("\nPress Enter to continue...");
+    fflush(stdout);
+
+    ch = getchar();
+    while (ch != '\n') {
+        if (ch == EOF) {
+            printf("\n");
+            return;
+        }
+
+        ch = getchar();
+    }
+
+    printf("\n");
+}
 
 /* Make room for one more segment. The array grows as the chart gets longer. */
 static int ensure_capacity(GanttChart *chart)
@@ -101,6 +125,7 @@ int gantt_add_segment(GanttChart *chart, int start_time, int end_time, int pid)
 void gantt_print_timeline(const GanttChart *chart)
 {
     int i;
+    int rows_on_page = 0;
 
     printf("\nExecution Timeline\n");
 
@@ -126,13 +151,24 @@ void gantt_print_timeline(const GanttChart *chart)
         } else {
             printf("P%d\n", chart->segments[i].pid);
         }
+
+        rows_on_page++;
+        if (i < chart->count - 1) {
+            if (rows_on_page == TIMELINE_PAGE_ROWS) {
+                wait_for_enter();
+                rows_on_page = 0;
+            }
+        }
     }
+
+    wait_for_enter();
 }
 
 /* Print the compact bar-style Gantt chart. */
 void gantt_print(const GanttChart *chart)
 {
-    int i;
+    int row_start = 0;
+    int rows_on_page = 0;
 
     printf("\nGantt Chart\n");
 
@@ -141,13 +177,35 @@ void gantt_print(const GanttChart *chart)
         return;
     }
 
-    for (i = 0; i < chart->count; i++) {
-        print_segment_label(chart->segments[i].pid);
-    }
-    printf("|\n");
+    while (row_start < chart->count) {
+        int row_end;
+        int i;
 
-    for (i = 0; i < chart->count; i++) {
-        printf("%-*d", GANTT_CELL_WIDTH, chart->segments[i].start_time);
+        row_end = row_start + GANTT_SEGMENTS_PER_ROW;
+        if (row_end > chart->count) {
+            row_end = chart->count;
+        }
+
+        for (i = row_start; i < row_end; i++) {
+            print_segment_label(chart->segments[i].pid);
+        }
+        printf("|\n");
+
+        for (i = row_start; i < row_end; i++) {
+            printf("%-*d", GANTT_CELL_WIDTH, chart->segments[i].start_time);
+        }
+        printf("%d\n", chart->segments[row_end - 1].end_time);
+
+        row_start = row_end;
+        rows_on_page++;
+
+        if (row_start < chart->count) {
+            if (rows_on_page == GANTT_ROWS_PER_PAGE) {
+                wait_for_enter();
+                rows_on_page = 0;
+            }
+        }
     }
-    printf("%d\n", chart->segments[chart->count - 1].end_time);
+
+    wait_for_enter();
 }

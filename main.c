@@ -149,6 +149,8 @@ static int read_menu_option(int max_option)
         return -1;
     }
 
+    clear_input_buffer();
+
     too_small = choice < 0;
     too_large = choice > max_option;
 
@@ -176,6 +178,8 @@ static int read_config_value(const char *prompt, int *value)
         clear_input_buffer();
         return 0;
     }
+
+    clear_input_buffer();
 
     return 1;
 }
