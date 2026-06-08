@@ -5,11 +5,107 @@
 #include "scheduler_internal.h"
 
 #define COMPARE_ALGORITHM_COUNT 6
+#define METRIC_EPSILON 0.000001
+
+typedef enum {
+    METRIC_WAITING,
+    METRIC_TURNAROUND,
+    METRIC_RESPONSE,
+    METRIC_UTILIZATION,
+    METRIC_THROUGHPUT
+} MetricType;
 
 typedef struct {
     const char *name;
     ScheduleResult result;
 } CompareRow;
+
+/* Return one metric value from a comparison row. */
+static double metric_value(const CompareRow *row, MetricType metric)
+{
+    if (metric == METRIC_WAITING) {
+        return row->result.average_waiting_time;
+    }
+
+    if (metric == METRIC_TURNAROUND) {
+        return row->result.average_turnaround_time;
+    }
+
+    if (metric == METRIC_RESPONSE) {
+        return row->result.average_response_time;
+    }
+
+    if (metric == METRIC_UTILIZATION) {
+        return row->result.cpu_utilization;
+    }
+
+    return row->result.throughput;
+}
+
+/* Compare doubles with a small tolerance for printed metric ties. */
+static int same_metric(double left, double right)
+{
+    double difference;
+
+    difference = left - right;
+    if (difference < 0.0) {
+        difference = -difference;
+    }
+
+    return difference < METRIC_EPSILON;
+}
+
+/* Print every algorithm tied for one best metric value. */
+static void print_best_line(const char *label,
+                            const CompareRow rows[],
+                            int row_count,
+                            int best_index,
+                            MetricType metric,
+                            int precision,
+                            const char *suffix)
+{
+    double best_value = metric_value(&rows[best_index], metric);
+    int i;
+    int printed = 0;
+    int tied_count = 0;
+
+    printf("%s: ", label);
+
+    for (i = 0; i < row_count; i++) {
+        if (same_metric(metric_value(&rows[i], metric), best_value)) {
+            tied_count++;
+        }
+    }
+
+    if (tied_count == row_count) {
+        printf("All algorithms");
+        if (precision == 4) {
+            printf(" (%.4f%s)\n", best_value, suffix);
+        } else {
+            printf(" (%.2f%s)\n", best_value, suffix);
+        }
+        return;
+    }
+
+    for (i = 0; i < row_count; i++) {
+        if (!same_metric(metric_value(&rows[i], metric), best_value)) {
+            continue;
+        }
+
+        if (printed) {
+            printf(", ");
+        }
+
+        printf("%s", rows[i].name);
+        printed = 1;
+    }
+
+    if (precision == 4) {
+        printf(" (%.4f%s)\n", best_value, suffix);
+    } else {
+        printf(" (%.2f%s)\n", best_value, suffix);
+    }
+}
 
 /* Copy one algorithm result into the comparison table rows. */
 static void save_row(CompareRow rows[],
@@ -87,12 +183,15 @@ static void print_table(const CompareRow rows[], int row_count)
     }
 }
 
-/* Print the best algorithms by the two main project metrics. */
+/* Print the best algorithms for each comparison metric. */
 static void print_best(const CompareRow rows[], int row_count)
 {
     int i;
     int best_waiting = 0;
     int best_turnaround = 0;
+    int best_response = 0;
+    int best_utilization = 0;
+    int best_throughput = 0;
 
     for (i = 1; i < row_count; i++) {
         if (rows[i].result.average_waiting_time <
@@ -104,14 +203,59 @@ static void print_best(const CompareRow rows[], int row_count)
             rows[best_turnaround].result.average_turnaround_time) {
             best_turnaround = i;
         }
+
+        if (rows[i].result.average_response_time <
+            rows[best_response].result.average_response_time) {
+            best_response = i;
+        }
+
+        if (rows[i].result.cpu_utilization >
+            rows[best_utilization].result.cpu_utilization) {
+            best_utilization = i;
+        }
+
+        if (rows[i].result.throughput >
+            rows[best_throughput].result.throughput) {
+            best_throughput = i;
+        }
     }
 
-    printf("\nBest Average Waiting Time: %s (%.2f)\n",
-           rows[best_waiting].name,
-           rows[best_waiting].result.average_waiting_time);
-    printf("Best Average Turnaround Time: %s (%.2f)\n",
-           rows[best_turnaround].name,
-           rows[best_turnaround].result.average_turnaround_time);
+    printf("\nBest Metrics\n");
+    print_best_line("Average Waiting Time",
+                    rows,
+                    row_count,
+                    best_waiting,
+                    METRIC_WAITING,
+                    2,
+                    "");
+    print_best_line("Average Turnaround Time",
+                    rows,
+                    row_count,
+                    best_turnaround,
+                    METRIC_TURNAROUND,
+                    2,
+                    "");
+    print_best_line("Average Response Time",
+                    rows,
+                    row_count,
+                    best_response,
+                    METRIC_RESPONSE,
+                    2,
+                    "");
+    print_best_line("CPU Utilization",
+                    rows,
+                    row_count,
+                    best_utilization,
+                    METRIC_UTILIZATION,
+                    2,
+                    "%");
+    print_best_line("Throughput",
+                    rows,
+                    row_count,
+                    best_throughput,
+                    METRIC_THROUGHPUT,
+                    4,
+                    "");
 }
 
 /* Compare every implemented scheduler using the same current process set. */
